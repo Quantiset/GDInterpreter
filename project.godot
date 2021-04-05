@@ -21,7 +21,11 @@ config/icon="res://icon.png"
 
 [autoload]
 
-Interpreter="*res://Scenes/Interpreter.gd"
+Interpreter="*res://Scripts/Interpreter.gd"
+
+[display]
+
+window/stretch/mode="viewport"
 
 [rendering]
 
