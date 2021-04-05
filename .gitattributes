@@ -1,2 +1,1 @@
-src/main/resources/static/* linguist-vendored
-*.rb linguist-language=GDscript
+* text=GDscript
