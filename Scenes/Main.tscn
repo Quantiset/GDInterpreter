@@ -1,11 +1,19 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://Scripts/Main.gd" type="Script" id=1]
-[ext_resource path="res://Assets/Roboto/Roboto-Regular.ttf" type="DynamicFontData" id=2]
+[ext_resource path="res://Assets/Source_Code_Pro/SourceCodePro-Regular.ttf" type="DynamicFontData" id=2]
+[ext_resource path="res://Assets/Roboto/Roboto-Bold.ttf" type="DynamicFontData" id=3]
 
 [sub_resource type="DynamicFont" id=1]
+size = 17
 use_mipmaps = true
+extra_spacing_top = -3
+extra_spacing_char = -1
 font_data = ExtResource( 2 )
+
+[sub_resource type="DynamicFont" id=2]
+size = 21
+font_data = ExtResource( 3 )
 
 [node name="Node2D" type="Node2D"]
 script = ExtResource( 1 )
@@ -14,14 +22,17 @@ script = ExtResource( 1 )
 margin_right = 1024.0
 margin_bottom = 600.0
 custom_fonts/font = SubResource( 1 )
-custom_colors/member_variable_color = Color( 0.435294, 0.215686, 0.215686, 1 )
+custom_colors/member_variable_color = Color( 0.564706, 0.458824, 0.458824, 1 )
 custom_colors/line_number_color = Color( 0.364706, 0.364706, 0.364706, 1 )
 custom_colors/background_color = Color( 0.129412, 0.129412, 0.129412, 1 )
-custom_colors/number_color = Color( 0.505882, 1, 0.521569, 1 )
+custom_colors/number_color = Color( 0.329412, 0.937255, 0.109804, 1 )
+custom_colors/current_line_color = Color( 0.156863, 0.156863, 0.156863, 1 )
 custom_colors/mark_color = Color( 0.411765, 0.345098, 0.423529, 1 )
+highlight_current_line = true
 syntax_highlighting = true
 show_line_numbers = true
 draw_tabs = true
+highlight_all_occurrences = true
 wrap_enabled = true
 minimap_draw = true
 caret_blink = true
@@ -30,7 +41,38 @@ __meta__ = {
 }
 
 [node name="Timer" type="Timer" parent="."]
-wait_time = 2.0
+wait_time = 0.16
 autostart = true
+
+[node name="Members" type="RichTextLabel" parent="."]
+margin_left = 710.742
+margin_top = 84.5597
+margin_right = 1021.74
+margin_bottom = 315.56
+custom_fonts/normal_font = SubResource( 2 )
+text = "Members:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ErrorLog" type="RichTextLabel" parent="."]
+margin_left = 708.172
+margin_top = 359.57
+margin_right = 1019.17
+margin_bottom = 590.57
+custom_fonts/normal_font = SubResource( 2 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ColorRect" type="ColorRect" parent="."]
+margin_top = -25.0
+margin_right = 1024.0
+margin_bottom = -1.90735e-06
+mouse_filter = 2
+color = Color( 1, 0, 0, 0.223529 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
 [connection signal="text_changed" from="TextEdit" to="." method="_on_TextEdit_text_changed"]
 [connection signal="timeout" from="Timer" to="." method="_on_Timer_timeout"]
