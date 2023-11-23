@@ -1,6 +1,6 @@
 extends Node2D
 
-onready var console = $TextEdit
+@onready var console = $TextEdit
 
 var can_interpret = true
 var queue_interpret = false

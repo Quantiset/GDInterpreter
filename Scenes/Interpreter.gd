@@ -1,12 +1,12 @@
 extends Node
 
 
-var Variables := {}
+var variables := {}
 const whitespace := " \t\n"
-const declarators := PoolStringArray([
+const declarators := PackedStringArray([
 	"var", "int", "float", "str", "bool", "arr"
 ])
-const operations := PoolStringArray([
+const operations := PackedStringArray([
 	"^", "*", "/", "-", "+", "%", "=", "=="
 ])
 const numbers := "0123456789."
@@ -189,13 +189,13 @@ func Interpret(text):
 	reInterpret()
 	
 	var line_idx = 1
-	var lines : PoolStringArray = text.split("\n")
+	var lines : PackedStringArray = text.split("\n")
 	for line in lines:
 		var error = checkLine(line)
 		if error is Error:
 			print(error, " at line ", line_idx)
 		line_idx += 1
-	print(Variables)
+	print(variables)
 	
 
 func checkLine(line:String):
@@ -219,9 +219,9 @@ func checkLine(line:String):
 		return error
 
 func reInterpret():
-	Variables = {}
+	variables = {}
 	ltokens = []
-	refreshTokenDetection()
+	refresh_token_detection()
 
 func determineToken(line:String):
 	var line_idx := 0
@@ -244,32 +244,32 @@ func determineToken(line:String):
 		
 		if lis_string != 1:
 			if lis_string == 2 or line_idx==line.length():
-				error = assignType()
+				error = assign_type()
 			elif character == " ":
 				if lpossible_token != " ":
-					error = assignType(lpossible_token.trim_suffix(" "))
+					error = assign_type(lpossible_token.trim_suffix(" "))
 			else:
 				for operation in operations:
 					if operation == character:
-						#assignType(lpossible_token.trim_suffix(operation).replace(" ", ""))
-						error = assignType(operation)
+						#assign_type(lpossible_token.trim_suffix(operation).replace(" ", ""))
+						error = assign_type(operation)
 		else:
 			if line_idx==line.length():
 				lis_string = 2
-				error = assignType()
+				error = assign_type()
 		
 		if error is Error:
 			return error
 	
 	return ltokens
 
-func refreshTokenDetection():
+func refresh_token_detection():
 	lpossible_token = ""
 	ldot_count = 0
 	lis_num = false
 	lis_string = 0
 
-func assignType(item=lpossible_token):
+func assign_type(item=lpossible_token):
 	if lis_num:
 		if ldot_count == 0:
 			ltokens.append(Int.new(int(item)))
@@ -282,7 +282,7 @@ func assignType(item=lpossible_token):
 	else:
 		ltokens.append(item)
 	
-	refreshTokenDetection()
+	refresh_token_detection()
 
 func processTokens(tokenlist : Array):
 	print(tokenlist)
@@ -295,7 +295,7 @@ func processTokens(tokenlist : Array):
 		if assignee.size() >= 3:
 			return Error.new(Errors.InvalidDeclaration)
 		
-		if assignee.size() == 1 and not Variables.has(assignee):
+		if assignee.size() == 1 and not variables.has(assignee):
 			return Error.new(Errors.NotDeclared)
 		
 		if assignee[0] == "var":
@@ -303,7 +303,7 @@ func processTokens(tokenlist : Array):
 			if temp is Error:
 				return temp
 			temp.is_dynamic = true
-			Variables[assignee[1]]=temp
+			variables[assignee[1]]=temp
 
 func compute(tokenlist : Array):
 	print(tokenlist)

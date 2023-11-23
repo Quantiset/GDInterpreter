@@ -1,18 +1,22 @@
 extends Node
 
 
-var Variables := {}
+var variables := {}
+
 const whitespace := " \t\n"
-const operations := PoolStringArray([
+const operations := [
 	"^", "*", "/", "-", "+", "%", "=", "==", "(", ")", 
 	";", "&", "|", ">", "<", "<=", ">="
-])
-const space_operators := PoolStringArray([
+]
+const precedence_operators = [
+	"*", "/", "^"
+]
+const space_operators := [
 	"or", "and", "equals", "greaterthan", "lessthan"
-])
-const ternaries := PoolStringArray([
+]
+const ternaries := [
 	"if", "in", "elif", "else", "repeat", "do", "for"
-])
+]
 const numbers := "0123456789."
 var included_variables := {
 	"pi" : Float.new(PI),
@@ -364,7 +368,7 @@ func Interpret(text):
 	var indentation_level = 0
 	var next_indentation_level = 0
 	var line_idx = 0
-	var lines : PoolStringArray = text.split("\n")
+	var lines : PackedStringArray = text.split("\n")
 	
 	var dichotomy := {}
 	
@@ -399,28 +403,27 @@ func Interpret(text):
 				has_just_been_raised = true
 		
 		ltokens=[]
-		refreshTokenDetection()
+		refresh_token_detection()
 	
 
 func checkLine(line:String):
 	var tokens := []
 	var possible_tokens
 	
-	possible_tokens = determineTokens(line)
+	possible_tokens = determine_tokens(line)
 	
 	if possible_tokens is Error:
 		return possible_tokens
 	tokens=possible_tokens
 	
-	
-	return processTokens(tokens)
+	return process_tokens(tokens)
 
 func reInterpret():
-	Variables = {}
+	variables = {}
 	ltokens = []
-	refreshTokenDetection()
+	refresh_token_detection()
 
-func determineTokens(line:String):
+func determine_tokens(line:String):
 	var line_idx := 0
 	
 	var error 
@@ -448,56 +451,56 @@ func determineTokens(line:String):
 			
 			#do not worry about rest of line (is comment)
 			if character == "#":
-				error = assignType(lpossible_token.trim_suffix("#"))
+				error = assign_type(lpossible_token.trim_suffix("#"))
 				if error is Error:
 					return error
 				return ltokens
 			#if is end of line or end of string, create a token
 			if lis_string == 2:
-				error = assignType()
+				error = assign_type()
 			
 			if (not character in numbers) and lis_num and not (character == " "):
-				assignType(lpossible_token.trim_suffix(character))
+				assign_type(lpossible_token.trim_suffix(character))
 				lpossible_token = character
 			
 			if lpossible_token == "true" or lpossible_token == "false" or lpossible_token == "null":
-				error = assignType()
+				error = assign_type()
 			
 			#if is a space, create a token and do not create one
 			#if the token is just more empty space
 			elif character == " ":
 				if lpossible_token != " ":
-					error = assignType(lpossible_token.trim_suffix(" "))
-				refreshTokenDetection()
+					error = assign_type(lpossible_token.trim_suffix(" "))
+				refresh_token_detection()
 			
 			else:
 				#else, if there is an operation, add it
 				for operation in operations:
 					if lpossible_token.ends_with(operation):
 						if not lpossible_token.replace(" ","")==operation:
-							error = assignType(lpossible_token.trim_suffix(operation).replace(" ", ""))
-						error = assignType(operation)
+							error = assign_type(lpossible_token.trim_suffix(operation).replace(" ", ""))
+						error = assign_type(operation)
 				if not character in numbers and lis_num:
 					return Error.new("Variable '" + lpossible_token + "' not properly defined")
 				if line_idx == line.length() and lpossible_token.dedent() != "":
-					error = assignType()
+					error = assign_type()
 		else:
 			if line_idx==line.length():
 				lis_string = 2
-				error = assignType()
+				error = assign_type()
 		
 		if error is Error:
 			return error
 	
 	return ltokens
 
-func refreshTokenDetection():
+func refresh_token_detection():
 	lpossible_token = ""
 	ldot_count = 0
 	lis_num = false
 	lis_string = 0
 
-func assignType(item=lpossible_token):
+func assign_type(item=lpossible_token):
 	if item is String and item in operations and item == "="\
 		and ltokens[-1] is String and ltokens[-1] in operations\
 			and ltokens[-1] == "=":
@@ -522,18 +525,18 @@ func assignType(item=lpossible_token):
 	else:
 		ltokens.append(item)
 	
-	refreshTokenDetection()
+	refresh_token_detection()
 
-func processTokens(tokenlist : Array):
+func process_tokens(tokenlist : Array):
 	if tokenlist[-1] is String and tokenlist[-1] == ";":
-		tokenlist.remove(tokenlist.size()-1)
+		tokenlist.remove_at(tokenlist.size()-1)
 	
 	if tokenlist.size()>=2 and tokenlist[0] is String and tokenlist[0] in ternaries:
 		if tokenlist[0] == "if":
 			if not (tokenlist[-1] is String and (tokenlist[-1] == "do" or tokenlist[-1] == ":")):
 				return Error.new("Expected 'do' after if statement")
 			
-			var test_bool = compute(tokenlist.slice(1,tokenlist.size()-2))
+			var test_bool = compute(tokenlist.slice(1,tokenlist.size()-1))
 			
 			if test_bool is Error:
 				return test_bool
@@ -555,8 +558,8 @@ func processTokens(tokenlist : Array):
 		
 		var splice_idx := tokenlist.find("=")
 		
-		var assignee := tokenlist.slice(0,splice_idx-1)
-		var assignment := tokenlist.slice(splice_idx+1,tokenlist.size()-1)
+		var assignee := tokenlist.slice(0,splice_idx)
+		var assignment := tokenlist.slice(splice_idx+1,tokenlist.size())
 		
 		if assignee.size() > 1:
 			return Error.new("Cannot Assign to Multiple Bases: " + str(assignee))
@@ -574,7 +577,7 @@ func processTokens(tokenlist : Array):
 		
 		if assignee[0] in included_variables:
 			return Error.new("Variable '" + assignee[0] + "' is already pre-declared")
-		Variables[assignee[0]]=temp
+		variables[assignee[0]]=temp
 	
 	return RetValue.new(false, "_")
 
@@ -583,14 +586,17 @@ func compute(tokenlist : Array):
 	if tokenlist.has("="):
 		return Error.new("Unexpected Assignment")
 	
+	#prechecks before computing
 	for tok_idx in range(tokenlist.size()):
 		var val = tokenlist[tok_idx]
+		
+		#substitutes variables with their correct values
 		if val is String and not val in operations:
 			
 			if included_variables.has(val):
 				tokenlist[tok_idx] = included_variables[val]
-			elif Variables.has(val):
-				tokenlist[tok_idx] = Variables[val]
+			elif variables.has(val):
+				tokenlist[tok_idx] = variables[val]
 			elif not val in space_operators:
 				return Error.new("Variable " + val + " not declared in current scope")
 	
@@ -616,7 +622,7 @@ func compute(tokenlist : Array):
 		if end_idx == -1:
 			return Error.new("Mismatched Parentheses")
 		
-		result = compute(tokenlist.slice(start_idx+1,end_idx-1))
+		result = compute(tokenlist.slice(start_idx+1,end_idx))
 		
 		if result is Error:
 			return result
